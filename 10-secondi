@@ -1,0 +1,1567 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>10 SECONDI</title>
+
+<style>
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at top, #242424 0%, #090909 45%, #000 100%);
+  color: white;
+  font-family: Arial, Helvetica, sans-serif;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+button {
+  font-family: inherit;
+  border: none;
+  cursor: pointer;
+}
+
+.screen {
+  display: none;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.screen.active {
+  display: flex;
+}
+
+#home {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.logo {
+  font-size: clamp(48px, 14vw, 90px);
+  font-weight: 1000;
+  letter-spacing: -4px;
+  line-height: .9;
+  text-shadow: 0 0 25px rgba(255,255,255,.18);
+}
+
+.subtitle {
+  margin-top: 15px;
+  color: #aaa;
+  font-size: 15px;
+  letter-spacing: 3px;
+}
+
+.play {
+  margin-top: 40px;
+  width: min(330px, 90vw);
+  padding: 20px;
+  border-radius: 18px;
+  background: #fff;
+  color: #000;
+  font-size: 26px;
+  font-weight: 1000;
+  box-shadow: 0 0 30px rgba(255,255,255,.18);
+}
+
+.play:active {
+  transform: scale(.96);
+}
+
+.recordHome {
+  margin-top: 25px;
+  color: #ffd84d;
+  font-weight: 800;
+}
+
+#game {
+  flex-direction: column;
+  padding: 12px;
+}
+
+.topbar {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  width: 100%;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.stat {
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 14px;
+  padding: 9px 5px;
+  text-align: center;
+}
+
+.stat small {
+  display: block;
+  color: #999;
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.stat strong {
+  display: block;
+  font-size: 19px;
+  margin-top: 3px;
+}
+
+.timerWrap {
+  width: 100%;
+  max-width: 700px;
+  margin: 12px auto;
+}
+
+.timer {
+  font-size: clamp(42px, 13vw, 70px);
+  font-weight: 1000;
+  text-align: center;
+  line-height: 1;
+}
+
+.timer.danger {
+  color: #ff3838;
+  animation: pulse .35s infinite alternate;
+}
+
+.progress {
+  height: 7px;
+  background: #222;
+  border-radius: 99px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.progressBar {
+  height: 100%;
+  width: 100%;
+  background: #fff;
+  transition: width .05s linear;
+}
+
+.levelText {
+  text-align: center;
+  font-size: 14px;
+  color: #aaa;
+  margin-bottom: 8px;
+}
+
+#arena {
+  position: relative;
+  width: min(700px, 96vw);
+  height: min(65vh, 600px);
+  min-height: 380px;
+  margin: auto;
+  border-radius: 24px;
+  border: 2px solid rgba(255,255,255,.1);
+  background:
+    radial-gradient(circle at center, rgba(255,255,255,.06), rgba(255,255,255,.015)),
+    #0b0b0b;
+  overflow: hidden;
+}
+
+.message {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 25px;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.message h2 {
+  font-size: 30px;
+  margin: 0;
+}
+
+.message p {
+  color: #aaa;
+}
+
+.target {
+  position: absolute;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #ff3b30;
+  box-shadow: 0 0 25px rgba(255,59,48,.55);
+  animation: pop .12s ease-out;
+}
+
+.target:active {
+  transform: scale(.85);
+}
+
+.fake {
+  position: absolute;
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  background: #444;
+  opacity: .7;
+}
+
+.symbol {
+  position: absolute;
+  font-size: 42px;
+  font-weight: 1000;
+  user-select: none;
+}
+
+.calc {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 25px;
+}
+
+.question {
+  font-size: clamp(38px, 11vw, 70px);
+  font-weight: 1000;
+}
+
+.answers {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: min(450px, 90%);
+}
+
+.answer {
+  padding: 18px 10px;
+  border-radius: 16px;
+  background: #202020;
+  color: white;
+  font-size: 25px;
+  font-weight: 900;
+  border: 1px solid #333;
+}
+
+.answer:active {
+  transform: scale(.95);
+}
+
+.memoryGrid {
+  display: grid;
+  gap: 10px;
+  width: min(450px, 90%);
+  margin: auto;
+}
+
+.memoryCard {
+  aspect-ratio: 1;
+  border-radius: 12px;
+  background: #202020;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  font-weight: 900;
+  border: 1px solid #333;
+}
+
+.memoryCard.show {
+  background: #fff;
+  color: #000;
+}
+
+.reflex {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.reflexButton {
+  width: min(250px, 65vw);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #222;
+  color: #777;
+  font-size: 25px;
+  font-weight: 1000;
+  border: 5px solid #333;
+}
+
+.reflexButton.ready {
+  background: #18d65c;
+  color: #001b08;
+  border-color: #76ff9d;
+  box-shadow: 0 0 45px rgba(24,214,92,.6);
+}
+
+.result {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.92);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+}
+
+.result.show {
+  display: flex;
+}
+
+.resultBox {
+  width: min(450px, 94vw);
+  background: #151515;
+  border: 1px solid #333;
+  border-radius: 25px;
+  padding: 30px 20px;
+  text-align: center;
+}
+
+.resultBox h2 {
+  font-size: 38px;
+  margin: 0 0 15px;
+}
+
+.resultScore {
+  font-size: 55px;
+  font-weight: 1000;
+  margin: 10px;
+}
+
+.resultInfo {
+  color: #aaa;
+  line-height: 1.7;
+}
+
+.resultButtons {
+  display: grid;
+  gap: 10px;
+  margin-top: 25px;
+}
+
+.resultButtons button {
+  padding: 16px;
+  border-radius: 14px;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.again {
+  background: white;
+  color: black;
+}
+
+.menu {
+  background: #252525;
+  color: white;
+}
+
+.flash {
+  animation: flash .25s;
+}
+
+@keyframes pulse {
+  from { transform: scale(1); }
+  to { transform: scale(1.06); }
+}
+
+@keyframes pop {
+  from { transform: scale(.5); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes flash {
+  0% { background: #222; }
+  50% { background: #fff; }
+  100% { background: #222; }
+}
+
+@media (max-height: 700px) {
+  #arena {
+    min-height: 330px;
+    height: 58vh;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<section id="home" class="screen active">
+  <div class="logo">10<br>SECONDI</div>
+  <div class="subtitle">10 SECONDI. UNA SFIDA.</div>
+
+  <button class="play" onclick="startGame()">GIOCA</button>
+
+  <div class="recordHome">
+    🏆 RECORD: <span id="homeRecord">0</span>
+  </div>
+</section>
+
+
+<section id="game" class="screen">
+
+  <div class="topbar">
+
+    <div class="stat">
+      <small>Livello</small>
+      <strong id="level">1</strong>
+    </div>
+
+    <div class="stat">
+      <small>Punti</small>
+      <strong id="score">0</strong>
+    </div>
+
+    <div class="stat">
+      <small>Combo</small>
+      <strong id="combo">x0</strong>
+    </div>
+
+    <div class="stat">
+      <small>Vite</small>
+      <strong id="lives">❤️❤️❤️</strong>
+    </div>
+
+    <div class="stat">
+      <small>Gioco</small>
+      <strong id="gameName">—</strong>
+    </div>
+
+    <div class="stat">
+      <small>Record</small>
+      <strong id="record">0</strong>
+    </div>
+
+  </div>
+
+  <div class="timerWrap">
+
+    <div id="timer" class="timer">10.0</div>
+
+    <div class="progress">
+      <div id="progressBar" class="progressBar"></div>
+    </div>
+
+  </div>
+
+  <div class="levelText" id="difficultyText">
+    Preparati...
+  </div>
+
+  <div id="arena"></div>
+
+</section>
+
+
+<div id="result" class="result">
+
+  <div class="resultBox">
+
+    <h2 id="resultTitle">GAME OVER</h2>
+
+    <div class="resultScore" id="resultScore">0</div>
+
+    <div class="resultInfo" id="resultInfo"></div>
+
+    <div class="resultButtons">
+      <button class="again" onclick="restartGame()">GIOCA ANCORA</button>
+      <button class="menu" onclick="goHome()">MENU</button>
+    </div>
+
+  </div>
+
+</div>
+
+
+<script>
+
+let level = 1;
+let score = 0;
+let combo = 0;
+let lives = 3;
+
+let timeLeft = 10;
+let timerInterval = null;
+let roundTimeout = null;
+
+let currentGame = null;
+let roundFinished = false;
+
+let memorySequence = [];
+let memoryIndex = 0;
+let reflexReady = false;
+let reflexStart = 0;
+
+let record = Number(localStorage.getItem("10s_record") || 0);
+
+document.getElementById("homeRecord").textContent = record;
+document.getElementById("record").textContent = record;
+
+
+const games = [
+  {
+    id: "targets",
+    name: "🎯 CERCHI"
+  },
+  {
+    id: "different",
+    name: "🧠 DIVERSO"
+  },
+  {
+    id: "math",
+    name: "➕ CALCOLO"
+  },
+  {
+    id: "memory",
+    name: "🧩 MEMORIA"
+  },
+  {
+    id: "reflex",
+    name: "⚡ RIFLESSO"
+  }
+];
+
+
+function startGame() {
+
+  document.getElementById("home").classList.remove("active");
+  document.getElementById("game").classList.add("active");
+
+  level = 1;
+  score = 0;
+  combo = 0;
+  lives = 3;
+
+  updateUI();
+
+  startRound();
+}
+
+
+function restartGame() {
+
+  document.getElementById("result").classList.remove("show");
+
+  level = 1;
+  score = 0;
+  combo = 0;
+  lives = 3;
+
+  updateUI();
+
+  startRound();
+}
+
+
+function goHome() {
+
+  stopTimers();
+
+  document.getElementById("result").classList.remove("show");
+  document.getElementById("game").classList.remove("active");
+  document.getElementById("home").classList.add("active");
+
+  document.getElementById("homeRecord").textContent = record;
+}
+
+
+function startRound() {
+
+  stopTimers();
+
+  roundFinished = false;
+
+  timeLeft = 10;
+
+  updateUI();
+
+  const arena = document.getElementById("arena");
+  arena.innerHTML = "";
+
+  currentGame = chooseGame();
+
+  document.getElementById("gameName").textContent = currentGame.name;
+
+  setDifficultyText();
+
+  playSound("start");
+
+  renderGame();
+
+  startTimer();
+}
+
+
+function chooseGame() {
+
+  /*
+    Livelli 1-10:
+    più semplici.
+
+    Livelli 11-30:
+    difficoltà media.
+
+    Dal 31:
+    aumenta la possibilità di MIX.
+  */
+
+  if (level >= 31 && Math.random() < 0.35) {
+    return {
+      id: "mix",
+      name: "🔥 MIX"
+    };
+  }
+
+  let available = [...games];
+
+  if (level <= 5) {
+    available = [
+      games[0],
+      games[1],
+      games[2]
+    ];
+  }
+
+  return available[Math.floor(Math.random() * available.length)];
+}
+
+
+function setDifficultyText() {
+
+  let text = "";
+
+  if (level <= 10) {
+    text = "🟢 FACILE — Impara i meccanismi";
+  }
+
+  else if (level <= 30) {
+    text = "🟡 MEDIO — Più veloce, più elementi";
+  }
+
+  else if (level <= 60) {
+    text = "🔴 DIFFICILE — Occhi aperti!";
+  }
+
+  else if (level <= 99) {
+    text = "⚫ ESTREMO — MA CHE STA SUCCEDENDO? 😂";
+  }
+
+  else if (level === 100) {
+    text = "👑 LA PROVA LEGGENDARIA";
+  }
+
+  else {
+    text = "♾️ INFINITO — Nessuna pietà";
+  }
+
+  document.getElementById("difficultyText").textContent = text;
+}
+
+
+function startTimer() {
+
+  const start = performance.now();
+
+  timerInterval = setInterval(() => {
+
+    const elapsed = (performance.now() - start) / 1000;
+
+    timeLeft = Math.max(0, 10 - elapsed);
+
+    document.getElementById("timer").textContent =
+      timeLeft.toFixed(1);
+
+    const percent = (timeLeft / 10) * 100;
+
+    document.getElementById("progressBar").style.width =
+      percent + "%";
+
+    if (timeLeft <= 3) {
+      document.getElementById("timer").classList.add("danger");
+    }
+
+    else {
+      document.getElementById("timer").classList.remove("danger");
+    }
+
+    if (timeLeft <= 0) {
+      endRound(false);
+    }
+
+  }, 50);
+}
+
+
+function stopTimers() {
+
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+
+  if (roundTimeout) {
+    clearTimeout(roundTimeout);
+    roundTimeout = null;
+  }
+}
+
+
+function renderGame() {
+
+  if (currentGame.id === "targets") {
+    renderTargets();
+  }
+
+  else if (currentGame.id === "different") {
+    renderDifferent();
+  }
+
+  else if (currentGame.id === "math") {
+    renderMath();
+  }
+
+  else if (currentGame.id === "memory") {
+    renderMemory();
+  }
+
+  else if (currentGame.id === "reflex") {
+    renderReflex();
+  }
+
+  else if (currentGame.id === "mix") {
+    renderMix();
+  }
+}
+
+
+/* =========================
+   🎯 TARGETS
+========================= */
+
+function renderTargets() {
+
+  const arena = document.getElementById("arena");
+
+  let count = 3;
+
+  if (level >= 6) count = 5;
+  if (level >= 11) count = 8;
+  if (level >= 21) count = 12;
+  if (level >= 31) count = 15;
+  if (level >= 61) count = 20;
+  if (level >= 71) count = 25;
+
+  let remaining = count;
+
+  function spawn() {
+
+    if (roundFinished) return;
+
+    arena.innerHTML = "";
+
+    let size = Math.max(34, 70 - level * 0.25);
+
+    const target = document.createElement("button");
+
+    target.className = "target";
+
+    target.style.width = size + "px";
+    target.style.height = size + "px";
+
+    const rect = arena.getBoundingClientRect();
+
+    const maxX = rect.width - size;
+    const maxY = rect.height - size;
+
+    target.style.left =
+      Math.random() * Math.max(1, maxX) + "px";
+
+    target.style.top =
+      Math.random() * Math.max(1, maxY) + "px";
+
+    target.onclick = () => {
+
+      if (roundFinished) return;
+
+      playSound("hit");
+
+      addScore();
+
+      remaining--;
+
+      if (remaining <= 0) {
+        endRound(true);
+      }
+
+      else {
+        spawn();
+      }
+
+    };
+
+    arena.appendChild(target);
+
+    if (level >= 16) {
+
+      const fakeCount =
+        Math.min(8, Math.floor(level / 10));
+
+      for (let i = 0; i < fakeCount; i++) {
+
+        const fake = document.createElement("div");
+
+        fake.className = "fake";
+
+        fake.style.left =
+          Math.random() * (rect.width - 55) + "px";
+
+        fake.style.top =
+          Math.random() * (rect.height - 55) + "px";
+
+        arena.appendChild(fake);
+      }
+    }
+  }
+
+  spawn();
+}
+
+
+/* =========================
+   🧠 DIFFERENT
+========================= */
+
+function renderDifferent() {
+
+  const arena = document.getElementById("arena");
+
+  arena.innerHTML = "";
+
+  const symbols = ["◆", "●", "■", "▲", "★"];
+
+  let count = 8;
+
+  if (level >= 11) count = 12;
+  if (level >= 21) count = 20;
+  if (level >= 31) count = 25;
+  if (level >= 61) count = 30;
+  if (level >= 71) count = 35;
+
+  const correct =
+    Math.floor(Math.random() * count);
+
+  const normal =
+    symbols[Math.floor(Math.random() * symbols.length)];
+
+  let different = normal;
+
+  while (different === normal) {
+    different =
+      symbols[Math.floor(Math.random() * symbols.length)];
+  }
+
+  for (let i = 0; i < count; i++) {
+
+    const button = document.createElement("button");
+
+    button.className = "symbol";
+
+    button.textContent =
+      i === correct ? different : normal;
+
+    const rect = arena.getBoundingClientRect();
+
+    button.style.left =
+      Math.random() * (rect.width - 60) + "px";
+
+    button.style.top =
+      Math.random() * (rect.height - 60) + "px";
+
+    button.onclick = () => {
+
+      if (i === correct) {
+        playSound("hit");
+        addScore();
+        endRound(true);
+      }
+
+      else {
+        playSound("error");
+        endRound(false);
+      }
+
+    };
+
+    arena.appendChild(button);
+  }
+}
+
+
+/* =========================
+   ➕ MATH
+========================= */
+
+function renderMath() {
+
+  const arena = document.getElementById("arena");
+
+  arena.innerHTML = "";
+
+  const calc = document.createElement("div");
+
+  calc.className = "calc";
+
+  let max = 10;
+
+  if (level >= 11) max = 20;
+  if (level >= 21) max = 40;
+  if (level >= 31) max = 70;
+  if (level >= 61) max = 100;
+
+  const a =
+    Math.floor(Math.random() * max) + 1;
+
+  const b =
+    Math.floor(Math.random() * max) + 1;
+
+  let operation = "+";
+
+  if (level >= 21 && Math.random() > .5) {
+    operation = "-";
+  }
+
+  let answer =
+    operation === "+"
+      ? a + b
+      : a - b;
+
+  const question = document.createElement("div");
+
+  question.className = "question";
+
+  question.textContent =
+    `${a} ${operation} ${b} = ?`;
+
+  calc.appendChild(question);
+
+  const answers = document.createElement("div");
+
+  answers.className = "answers";
+
+  let choices = [answer];
+
+  while (choices.length < 4) {
+
+    const fake =
+      answer +
+      Math.floor(Math.random() * 15) -
+      7;
+
+    if (!choices.includes(fake)) {
+      choices.push(fake);
+    }
+  }
+
+  choices.sort(() => Math.random() - .5);
+
+  choices.forEach(value => {
+
+    const button = document.createElement("button");
+
+    button.className = "answer";
+
+    button.textContent = value;
+
+    button.onclick = () => {
+
+      if (value === answer) {
+        playSound("hit");
+        addScore();
+        endRound(true);
+      }
+
+      else {
+        playSound("error");
+        endRound(false);
+      }
+
+    };
+
+    answers.appendChild(button);
+
+  });
+
+  calc.appendChild(answers);
+
+  arena.appendChild(calc);
+}
+
+
+/* =========================
+   🧩 MEMORY
+========================= */
+
+function renderMemory() {
+
+  const arena = document.getElementById("arena");
+
+  arena.innerHTML = "";
+
+  let count = 3;
+
+  if (level >= 11) count = 4;
+  if (level >= 21) count = 6;
+  if (level >= 31) count = 7;
+  if (level >= 61) count = 10;
+  if (level >= 71) count = 12;
+
+  const emojis = [
+    "🍎","⭐","🔥","🎯",
+    "🚀","👾","⚡","💎",
+    "🎮","🧠","🍕","👑"
+  ];
+
+  memorySequence =
+    emojis.sort(() => Math.random() - .5)
+           .slice(0, count);
+
+  memoryIndex = 0;
+
+  const grid = document.createElement("div");
+
+  grid.className = "memoryGrid";
+
+  const columns =
+    count <= 4 ? 2 :
+    count <= 9 ? 3 : 4;
+
+  grid.style.gridTemplateColumns =
+    `repeat(${columns}, 1fr)`;
+
+  memorySequence.forEach((symbol, index) => {
+
+    const card = document.createElement("button");
+
+    card.className = "memoryCard";
+
+    card.textContent = symbol;
+
+    card.dataset.index = index;
+
+    grid.appendChild(card);
+
+  });
+
+  arena.appendChild(grid);
+
+  setTimeout(() => {
+
+    const cards =
+      document.querySelectorAll(".memoryCard");
+
+    cards.forEach(card => {
+      card.classList.add("show");
+    });
+
+    setTimeout(() => {
+
+      cards.forEach(card => {
+        card.classList.remove("show");
+
+        card.textContent = "?";
+      });
+
+      enableMemoryClicks();
+
+    }, Math.max(500, 1600 - level * 8));
+
+  }, 300);
+}
+
+
+function enableMemoryClicks() {
+
+  const cards =
+    document.querySelectorAll(".memoryCard");
+
+  cards.forEach(card => {
+
+    card.onclick = () => {
+
+      const index =
+        Number(card.dataset.index);
+
+      if (memorySequence[index] === memorySequence[memoryIndex]) {
+
+        card.textContent =
+          memorySequence[index];
+
+        card.classList.add("show");
+
+        memoryIndex++;
+
+        playSound("hit");
+
+        if (memoryIndex >= memorySequence.length) {
+
+          addScore();
+
+          endRound(true);
+        }
+
+      }
+
+      else {
+
+        playSound("error");
+
+        endRound(false);
+      }
+
+    };
+
+  });
+}
+
+
+/* =========================
+   ⚡ REFLEX
+========================= */
+
+function renderReflex() {
+
+  const arena = document.getElementById("arena");
+
+  arena.innerHTML = "";
+
+  reflexReady = false;
+
+  const wrapper =
+    document.createElement("div");
+
+  wrapper.className = "reflex";
+
+  const button =
+    document.createElement("button");
+
+  button.className = "reflexButton";
+
+  button.textContent =
+    "ASPETTA...";
+
+  button.onclick = () => {
+
+    if (!reflexReady) {
+
+      playSound("error");
+
+      endRound(false);
+
+      return;
+    }
+
+    const reaction =
+      performance.now() - reflexStart;
+
+    playSound("hit");
+
+    addScore(
+      Math.max(50, Math.floor(300 - reaction / 4))
+    );
+
+    endRound(true);
+  };
+
+  wrapper.appendChild(button);
+
+  arena.appendChild(wrapper);
+
+  const delay =
+    Math.max(
+      500,
+      2500 - level * 15
+    );
+
+  roundTimeout = setTimeout(() => {
+
+    if (roundFinished) return;
+
+    reflexReady = true;
+
+    button.classList.add("ready");
+
+    button.textContent =
+      "TOCCA!";
+
+    reflexStart =
+      performance.now();
+
+    playSound("ready");
+
+  }, delay);
+}
+
+
+/* =========================
+   🔥 MIX
+========================= */
+
+function renderMix() {
+
+  const arena = document.getElementById("arena");
+
+  arena.innerHTML = "";
+
+  const title =
+    document.createElement("div");
+
+  title.className = "message";
+
+  title.innerHTML = `
+    <div>
+      <h2>🔥 MIX</h2>
+      <p>Preparati...</p>
+    </div>
+  `;
+
+  arena.appendChild(title);
+
+  setTimeout(() => {
+
+    if (roundFinished) return;
+
+    /*
+      Il MIX sceglie uno dei 5 giochi
+      senza interrompere il conto alla rovescia.
+    */
+
+    const original = currentGame;
+
+    currentGame =
+      games[Math.floor(Math.random() * games.length)];
+
+    document.getElementById("gameName").textContent =
+      "🔥 " + currentGame.name;
+
+    renderGame();
+
+  }, 700);
+}
+
+
+/* =========================
+   SCORE
+========================= */
+
+function addScore(extra = 0) {
+
+  combo++;
+
+  let multiplier =
+    Math.min(5, 1 + Math.floor(combo / 3));
+
+  let points =
+    100 * multiplier;
+
+  points += extra;
+
+  score += points;
+
+  if (combo % 3 === 0 && lives < 3) {
+    lives++;
+  }
+
+  updateUI();
+
+  showScorePop("+" + points);
+}
+
+
+function showScorePop(text) {
+
+  const pop =
+    document.createElement("div");
+
+  pop.textContent = text;
+
+  pop.style.position = "fixed";
+  pop.style.left = "50%";
+  pop.style.top = "42%";
+  pop.style.transform = "translate(-50%, -50%)";
+  pop.style.fontSize = "45px";
+  pop.style.fontWeight = "1000";
+  pop.style.zIndex = "200";
+  pop.style.pointerEvents = "none";
+
+  document.body.appendChild(pop);
+
+  setTimeout(() => {
+
+    pop.style.transition =
+      "all .4s ease";
+
+    pop.style.opacity = "0";
+    pop.style.transform =
+      "translate(-50%, -80%) scale(1.3)";
+
+  }, 50);
+
+  setTimeout(() => pop.remove(), 500);
+}
+
+
+/* =========================
+   ROUND END
+========================= */
+
+function endRound(success) {
+
+  if (roundFinished) return;
+
+  roundFinished = true;
+
+  stopTimers();
+
+  if (!success) {
+
+    lives--;
+    combo = 0;
+
+    playSound("error");
+
+    document.getElementById("arena")
+      .classList.add("flash");
+
+    setTimeout(() => {
+      document.getElementById("arena")
+        .classList.remove("flash");
+    }, 250);
+
+  }
+
+  else {
+
+    combo++;
+
+  }
+
+  updateUI();
+
+  if (lives <= 0) {
+
+    setTimeout(gameOver, 450);
+
+    return;
+  }
+
+  /*
+    Bonus per il tempo rimasto.
+  */
+
+  if (success) {
+
+    const bonus =
+      Math.floor(timeLeft * 10);
+
+    score += bonus;
+
+  }
+
+  level++;
+
+  updateUI();
+
+  setTimeout(startRound, 550);
+}
+
+
+/* =========================
+   GAME OVER
+========================= */
+
+function gameOver() {
+
+  stopTimers();
+
+  if (score > record) {
+
+    record = score;
+
+    localStorage.setItem(
+      "10s_record",
+      record
+    );
+  }
+
+  document.getElementById("resultTitle").textContent =
+    level >= 100
+      ? "👑 LEGGENDARIO!"
+      : "GAME OVER";
+
+  document.getElementById("resultScore").textContent =
+    score;
+
+  document.getElementById("resultInfo").innerHTML = `
+    Livello raggiunto: <b>${level}</b><br>
+    Record: <b>${record}</b><br>
+    Combo finale: <b>x${Math.min(5, 1 + Math.floor(combo / 3))}</b>
+  `;
+
+  document.getElementById("result")
+    .classList.add("show");
+
+  document.getElementById("homeRecord")
+    .textContent = record;
+
+  playSound("gameover");
+}
+
+
+/* =========================
+   UI
+========================= */
+
+function updateUI() {
+
+  document.getElementById("level")
+    .textContent = level;
+
+  document.getElementById("score")
+    .textContent = score;
+
+  document.getElementById("combo")
+    .textContent =
+      "x" +
+      Math.min(
+        5,
+        1 + Math.floor(combo / 3)
+      );
+
+  document.getElementById("lives")
+    .textContent =
+      "❤️".repeat(lives) +
+      "🖤".repeat(Math.max(0, 3 - lives));
+
+  document.getElementById("record")
+    .textContent = record;
+}
+
+
+/* =========================
+   SOUND
+========================= */
+
+let audioContext = null;
+
+function beep(freq, duration, type = "sine") {
+
+  try {
+
+    if (!audioContext) {
+      audioContext =
+        new (window.AudioContext ||
+        window.webkitAudioContext)();
+    }
+
+    const osc =
+      audioContext.createOscillator();
+
+    const gain =
+      audioContext.createGain();
+
+    osc.type = type;
+    osc.frequency.value = freq;
+
+    gain.gain.setValueAtTime(
+      0.001,
+      audioContext.currentTime
+    );
+
+    gain.gain.exponentialRampToValueAtTime(
+      0.12,
+      audioContext.currentTime + 0.01
+    );
+
+    gain.gain.exponentialRampToValueAtTime(
+      0.001,
+      audioContext.currentTime + duration
+    );
+
+    osc.connect(gain);
+    gain.connect(audioContext.destination);
+
+    osc.start();
+    osc.stop(
+      audioContext.currentTime + duration
+    );
+
+  } catch (e) {}
+}
+
+
+function playSound(type) {
+
+  if (type === "hit") {
+    beep(700, .08, "square");
+  }
+
+  else if (type === "error") {
+    beep(120, .18, "sawtooth");
+  }
+
+  else if (type === "ready") {
+    beep(900, .12, "square");
+  }
+
+  else if (type === "start") {
+    beep(500, .08);
+  }
+
+  else if (type === "gameover") {
+    beep(180, .3, "sawtooth");
+  }
+}
+
+
+/* =========================
+   PREVENT DOUBLE TAP ZOOM
+========================= */
+
+let lastTouch = 0;
+
+document.addEventListener(
+  "touchend",
+  function(event) {
+
+    const now =
+      Date.now();
+
+    if (now - lastTouch <= 300) {
+      event.preventDefault();
+    }
+
+    lastTouch = now;
+
+  },
+  { passive: false }
+);
+
+</script>
+
+</body>
+</html>
